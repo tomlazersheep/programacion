@@ -26,11 +26,26 @@ typedef struct node{
 	int data;
 }node;
 
+
+
+node *insertar_lifo (node *l, int d)
+	{
+	node *nuevo;
+
+	nuevo = (node*) malloc (sizeof (node));
+	nuevo->data = d;
+	nuevo->next = l;
+	return nuevo;
+	}	
+
+
+
+
 int main()
 {
 	node *first,*auxa,*auxb;
 	FILE* samples;
-	int temporal_int,fread_return;
+	int temporal_int,fread_return,user_choice;
 	samples=fopen("muestras.dat","r");
 	if (samples!=NULL)
 	{
@@ -60,7 +75,44 @@ int main()
 
 
 			//from here the list is done
-			
+			while(1){
+				printf("Select an option\n");
+				printf("Agregar un nuevo elemento al principio de la lista.\n
+					2- Eliminar el primer elemento que coincida con un valor ingresado por teclado.\n
+					3- Informar el tiempo de desintegración más bajo de la lista.\n
+					4- Mostrar todos los tiempos de desintegración que son mayores a un valor ingresado
+					por teclado e informar cuántos fueron.\n
+					5- Fin del menú.\n\n", );
+				scanf("%i",&user_choice);
+				switch(user_choice){
+					case 1:
+						//agregar lifo, robarselo del ejemplo
+						printf("ingrese el nuevo dato al principio de la lista:\n");
+						scanf("%i",&temporal_int);
+						first=insertar_lifo(first,temporal_int);
+						break;
+					case 2:
+						first=deleteFirstN(first);
+						//eliminar primer elemento de valor n
+						break;
+					case 3:
+						//buscar el data mas chico de la lista
+						break;
+					case 4:
+						//mostrar todos los data mayores a n
+						break;
+					case 5:
+						//robarse un delete-list y salir del loop
+						break;
+				}
+
+
+			}
+
+
+
+
+
 
 
 		}else{
