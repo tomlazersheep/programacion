@@ -73,6 +73,30 @@ node *deleteFirstN(node *first){
 	return first;
 }
 
+void showBiggerThan(node *first){
+	printf("where is your minimum treshold?\n");
+	int treshold,loop_flag=1,counter;
+	node *aux=first;
+	scanf("%i",&treshold);
+	while(loop_flag){
+		if (aux->next==NULL){
+			loop_flag=0;
+		}
+
+		if (aux->data > treshold)
+		{
+			printf("%i  ",aux->data );
+			counter++;
+		}
+
+		aux=aux->next;
+
+	}
+	printf("\n");
+	printf("values found: %i\n",counter );
+}
+
+
 node *destruir (node *l) {
 	node *aux;
 
@@ -102,6 +126,24 @@ void smallerData(node *first){
 		}
 	}
 }
+
+void showList(node *first){
+	node *aux=first;
+	int loop_flag=1;
+	printf("value \t address \t\t next-address\n");
+	while(loop_flag){
+		if (aux->next!=NULL){
+
+			printf("%i \t %p \t %p \n",aux->data, aux, aux->next );
+			aux=aux->next;
+		}else{
+			printf("%i \t %p \t last-node \n",aux->data, aux);
+			return;
+		}
+	}
+}
+
+
 
 
 int main()
@@ -146,18 +188,6 @@ int main()
 				printf("4- Mostrar todos los tiempos de desintegración que son mayores a un valor ingresado por teclado e informar cuántos fueron.\n");
 				printf("5- Fin del menú.\n");
 				
-
-
-
-
-
-
-
-
-
-
-
-
 				scanf("%i",&user_choice);
 				switch(user_choice){
 					case 1:
@@ -169,15 +199,22 @@ int main()
 						first=deleteFirstN(first);
 						break;
 					case 3:
-						//buscar el data mas chico de la lista
 						smallerData(first);
 						break;
 					case 4:
 						//mostrar todos los data mayores a n
+						showBiggerThan(first);
+
 						break;
 					case 5:
 						first=destruir(first);
 						main_while_flag=0;
+						break;
+					case 6:
+						showList(first);
+						break;
+					default:
+						printf("invalid option.\n");
 						break;
 				}
 
