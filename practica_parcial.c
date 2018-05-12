@@ -28,13 +28,14 @@ typedef struct node{
 
 
 
-node *insertar_lifo (node *l, int d)
+node *insertar_lifo (node *l, int d) //this works even if the list is empty
 	{
 	node *nuevo;
 
 	nuevo = (node*) malloc (sizeof (node));
 	nuevo->data = d;
 	nuevo->next = l;
+
 	return nuevo;
 	}	
 
@@ -43,37 +44,48 @@ node *deleteFirstN(node *first){
 	node *aux=first,*aux_prev;
 	printf("que valor quiere eliminar?\n");
 	scanf("%i",&n);
+	if (first!=NULL)
+	{
+		while(loop_flag){
+			if ((aux->data)==n){
+				//ive found aux is the node to be deleted
+				if (aux==first){
+					first=aux->next;
+					
+				}else{
+					aux_prev->next=aux->next;
+				}	
+				free(aux);
+				loop_flag=0;
+				printf("successfully deleted\n");		
 
-	while(loop_flag){
-		if ((aux->data)==n){
-			//ive found aux is the node to be deleted
-			if (aux==first){
-				first=aux->next;
-				
+
+			}else if (aux->next != NULL){
+				aux_prev=aux;
+				aux=aux->next;
+
 			}else{
-				aux_prev->next=aux->next;
-			}	
-			free(aux);
-			loop_flag=0;
-			printf("successfully deleted\n");		
 
+				printf("%i number not found\n", n );
+				loop_flag=0;
 
-		}else if (aux->next != NULL){
-			aux_prev=aux;
-			aux=aux->next;
-
-		}else{
-
-			printf("%i number not found\n", n );
-
+			}
+			
 		}
-		
+	}else{
+		printf("The list is empty.\n");
 	}
+	
 
 	return first;
 }
 
 void showBiggerThan(node *first){
+	if (first==NULL)
+	{
+		printf("Empty list.\n");
+		return;
+	}
 	printf("where is your minimum treshold?\n");
 	int treshold,loop_flag=1,counter;
 	node *aux=first;
@@ -113,16 +125,22 @@ void smallerData(node *first){
 	node *aux;
 	int loop_flag=1,smaller;
 	aux=first;
-	smaller=aux->data;
-	while(loop_flag){
-		if (aux!=NULL){
-			if (smaller > aux->data){
-				smaller = aux->data;
+	if (first==NULL)
+	{
+		printf("Empty list.\n");
+		return;
+	}else{
+		smaller=aux->data;
+		while(loop_flag){
+			if (aux!=NULL){
+				if (smaller > aux->data){
+					smaller = aux->data;
+				}
+				aux=aux->next;
+			}else{
+				printf("End of list reached, smallest value found was %i  \n", smaller );
+				return;
 			}
-			aux=aux->next;
-		}else{
-			printf("End of list reached, smallest value found was %i  \n", smaller );
-			return;
 		}
 	}
 }
@@ -130,15 +148,20 @@ void smallerData(node *first){
 void showList(node *first){
 	node *aux=first;
 	int loop_flag=1;
-	printf("value \t address \t\t next-address\n");
-	while(loop_flag){
-		if (aux->next!=NULL){
 
-			printf("%i \t %p \t %p \n",aux->data, aux, aux->next );
-			aux=aux->next;
-		}else{
-			printf("%i \t %p \t last-node \n",aux->data, aux);
-			return;
+	if (first==NULL){
+		printf("Empty list.\n");
+	}else{		
+		printf("value \t address \t\t next-address\n");
+		while(loop_flag){
+			if (aux->next!=NULL){
+
+				printf("%i \t %p \t %p \n",aux->data, aux, aux->next );
+				aux=aux->next;
+			}else{
+				printf("%i \t %p \t last-node \n",aux->data, aux);
+				return;
+			}
 		}
 	}
 }
