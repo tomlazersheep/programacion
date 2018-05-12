@@ -39,21 +39,23 @@ node *insertar_lifo (node *l, int d)
 	}	
 
 node *deleteFirstN(node *first){
-	int n;
+	int n,loop_flag=1;
 	node *aux=first,*aux_prev;
 	printf("que valor quiere eliminar?\n");
 	scanf("%i",&n);
 
-	while(1){
+	while(loop_flag){
 		if ((aux->data)==n){
 			//ive found aux is the node to be deleted
 			if (aux==first){
 				first=aux->next;
-				free(aux);
+				
 			}else{
 				aux_prev->next=aux->next;
-				free(aux);
-			}			
+			}	
+			free(aux);
+			loop_flag=0;
+			printf("successfully deleted\n");		
 
 
 		}else if (aux->next != NULL){
@@ -71,12 +73,42 @@ node *deleteFirstN(node *first){
 	return first;
 }
 
+node *destruir (node *l) {
+	node *aux;
+
+	while (l != NULL) {
+		aux = l;
+		l = l->next;
+		free (aux);
+	}
+	printf ("lista destruida\n");
+	return NULL;
+}
+
+void smallerData(node *first){
+	node *aux;
+	int loop_flag=1,smaller;
+	aux=first;
+	smaller=aux->data;
+	while(loop_flag){
+		if (aux!=NULL){
+			if (smaller > aux->data){
+				smaller = aux->data;
+			}
+			aux=aux->next;
+		}else{
+			printf("End of list reached, smallest value found was %i  \n", smaller );
+			return;
+		}
+	}
+}
+
 
 int main()
 {
 	node *first,*auxa,*auxb;
 	FILE* samples;
-	int temporal_int,fread_return,user_choice;
+	int temporal_int,fread_return,user_choice,main_while_flag=1;
 	samples=fopen("muestras.dat","r");
 	if (samples!=NULL)
 	{
@@ -106,34 +138,46 @@ int main()
 
 
 			//from here the list is done
-			while(1){
+			while(main_while_flag){
 				printf("Select an option\n");
-				printf("Agregar un nuevo elemento al principio de la lista.\n
-					2- Eliminar el primer elemento que coincida con un valor ingresado por teclado.\n
-					3- Informar el tiempo de desintegración más bajo de la lista.\n
-					4- Mostrar todos los tiempos de desintegración que son mayores a un valor ingresado
-					por teclado e informar cuántos fueron.\n
-					5- Fin del menú.\n\n", );
+				printf("1- Agregar un nuevo elemento al principio de la lista.\n");
+				printf("2- Eliminar el primer elemento que coincida con un valor ingresado por teclado.\n");
+				printf("3- Informar el tiempo de desintegración más bajo de la lista.\n");
+				printf("4- Mostrar todos los tiempos de desintegración que son mayores a un valor ingresado por teclado e informar cuántos fueron.\n");
+				printf("5- Fin del menú.\n");
+				
+
+
+
+
+
+
+
+
+
+
+
+
 				scanf("%i",&user_choice);
 				switch(user_choice){
 					case 1:
-						//agregar lifo, robarselo del ejemplo
 						printf("ingrese el nuevo dato al principio de la lista:\n");
 						scanf("%i",&temporal_int);
 						first=insertar_lifo(first,temporal_int);
 						break;
 					case 2:
 						first=deleteFirstN(first);
-						//eliminar primer elemento de valor n
 						break;
 					case 3:
 						//buscar el data mas chico de la lista
+						smallerData(first);
 						break;
 					case 4:
 						//mostrar todos los data mayores a n
 						break;
 					case 5:
-						//robarse un delete-list y salir del loop
+						first=destruir(first);
+						main_while_flag=0;
 						break;
 				}
 
