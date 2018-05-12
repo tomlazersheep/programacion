@@ -38,7 +38,38 @@ node *insertar_lifo (node *l, int d)
 	return nuevo;
 	}	
 
+node *deleteFirstN(node *first){
+	int n;
+	node *aux=first,*aux_prev;
+	printf("que valor quiere eliminar?\n");
+	scanf("%i",&n);
 
+	while(1){
+		if ((aux->data)==n){
+			//ive found aux is the node to be deleted
+			if (aux==first){
+				first=aux->next;
+				free(aux);
+			}else{
+				aux_prev->next=aux->next;
+				free(aux);
+			}			
+
+
+		}else if (aux->next != NULL){
+			aux_prev=aux;
+			aux=aux->next;
+
+		}else{
+
+			printf("%i number not found\n", n );
+
+		}
+		
+	}
+
+	return first;
+}
 
 
 int main()
