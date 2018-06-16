@@ -14,24 +14,137 @@ Cantidad de bits en “1” que hay en el valor*/
 	int address;
 	int contentB;
 	int contentH;
-	char[20] description;
+	char description[20];
 	int bitsOn;
-} registerInfo;
-*/
+} registerInfo;*/
+
+unsigned char in (unsigned char reg){
+  outb (reg, 0x70);
+  return inb(0x70 + 1);
+  }
+
+
+
+
 void showMeRegisters(){
-	unsigned char[13] registerContent;
-	int address= 0x00;
-	//check for rtc registers
-	for (int i = 0; i < 13; ++i)
+	unsigned char registerContent[13];
+	int address= 0x00,uip_flag=1;
+	unsigned char aux;
+	char description[14][20]={"segundos","segundos alarma","minutos    ","minutos alarma","horas   ","horas alarma","dia semana","dia mes    ","mes     ","anio     ","Registro A","Registro B","Registro C","Registro D"};
+
+	if (in(0x0D) & 0x80)//read VRT 
 	{
-		outb(address,0x70);
-		registerContent[i]=inb(0x71);
-		address++;
+		do{
+			if (in(0x0A)&0x80){	
+				nanosleep(1984000);
+			}else{
+				uip_flag=0;
+			}	
+		}while(uip_flag);
+
+		//write 1 to SET bit on 0x0B, first bit.
+		aux = in(0x0B);
+		aux= aux | 0x80; 
+		outb(0x0B,0x070);
+		outb(aux,0x071);
+
+
+		//get all 13 registers
+		for (int i = 0; i < 13; ++i)
+		{
+			outb(address,0x70);
+			registerContent[i]=inb(0x71);
+			address++;
+		}
+
+		//set SET back to 0
+		aux = in(0x0B);
+		aux= aux & 0x7F; 
+		outb(0x0B,0x070);
+		outb(aux,0x071);
 	}
 
+	//now I should get all the elements to print
+	printf("Address\tBinary\t\tHex\tDescription\t\tBits set\n");
+	for (int j = 0; j < 13; ++j){
+		printf("0x%02x\t",j );
+		for (int i = 0; i < 8; i++) {
+	    	printf("%d", !!((registerContent[j] << i) & 0x80));
+	  	}
+
+	  	printf("\t0x%02x",registerContent[j] );
+		
+		printf("\t%s",description[j] );
+
+		int bitsOn=0;
+		for (int i = 0; i < 8; i++) {
+	    	if((registerContent[j] << i) & 0x80){
+	    		bitsOn++;
+	    	}
+	  	}
+	    printf("\t\t %d",bitsOn );
+
+	  	printf("\n");
+	}
+	
+
+  	return;
 }
 
+void alarmAt(){
+	/*Utilizando el RTC programar una alarma que se active a determinada hora ingresada por teclado
+(HH:MM:SS). Al activarse la alarma debe aparecer un mensaje que lo informe.*/
+	int uip_flag=1;
+	unsigned char hours,minutes,seconds,aux;
+	if (in(0x0D) & 0x80)//read VRT 
+	{
+		do{
+			if (in(0x0A)&0x80){	
+				nanosleep(1984000);
+			}else{
+				uip_flag=0;
+			}	
+		}while(uip_flag);
 
+		//write 1 to SET bit on 0x0B, first bit.
+		aux = in(0x0B);
+		aux = aux | 0x80; 
+		outb(0x0B,0x70);
+		outb(aux,0x71);
+
+		printf("insertar hora deseada para la alarma:\n");
+		scanf("%hhu:%hhu:%hhu",&hours,&minutes,&seconds);
+
+
+		//write all data 
+		outb(0x01,0x70);
+		outb(seconds,0x71);
+
+		outb(0x03,0x70);
+		outb(minutes,0x71);
+
+		outb(0x05,0x70);
+		outb(hours,0x71);
+
+
+		//set AIE to 1
+
+		aux = in(0x0B);
+		aux = aux | 0x20; 
+		outb(0x0B,0x70);
+		outb(aux,0x71);
+
+
+
+		//set SET back to 0
+
+		aux = in(0x0B);
+		aux= aux & 0x7F; 
+		outb(0x0B,0x70);
+		outb(aux,0x71);		
+	}
+	return;
+}
 
 
 
@@ -39,11 +152,45 @@ void main(){
 	printf("UNSAM, PROGRAMACION, TP FINAL\n");
 	printf("Alumno: Lovera Tomas Gonzalo \n");
 	printf("Legajo: CYT-8308\n");
+	int option;
+
+	printf("\nBienvenido al tp final. Que desea hacer?\n");
 	
-	if (ioperm(P, 2, 1)) {
-    	perror("ioperm"); 
+	if (ioperm(0x70, 2, 1)) {
+	   	perror("ioperm"); 
     	exit(1);
   	}
+
+	do{
+		printf("1.Mostrar el contenido de los registros 0 al 13\n2.Utilizando el RTC programar una alarma a determinada hora\n3.Utilizando el RTC obtener un tren de pulsos de 2Hz realizando un muestreo del registro C y graficarlo en pantalla en tiempo real\n4.Enviar por el puerto paralelo el campo minutos de la hora obtenida del RTC\n");
+		scanf("%d",&option);
+
+		switch(option){
+			case 1:
+  				showMeRegisters();			
+				break;
+			case 2:
+				alarmAt();
+				break;
+			case 3:
+
+				break;
+			case 4:
+
+				break;
+			case 5:
+				printf("Saliendo.\n");
+				return;
+				break;
+			default:
+				printf("No es una opcion.\n");
+				continue;
+				break;
+		}
+
+	}while(1);
+
+
 
 
 	return;
