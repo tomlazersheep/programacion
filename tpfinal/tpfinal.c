@@ -2,6 +2,7 @@
 #include "unistd.h"
 #include "stdio.h"
 #include "sys/io.h"
+#include <string.h>
 
 /*1) Mostrar el contenido de los registros 0 al 13. El contenido se debe mostrar en forma de tabla
 donde cada fila corresponde a un registro y con las siguientes columnas correctamente
@@ -23,7 +24,18 @@ unsigned char in (unsigned char reg){
   return inb(0x70 + 1);
   }
 
+unsigned char giveMeBCD(unsigned char num){
+   	unsigned char bcd = 0;
+   	int shift = 0;
 
+
+   while (num > 0) {
+      bcd |= (num % 10) << (shift++ << 2);
+      num /= 10;
+   }
+   return bcd;
+
+}
 
 
 void showMeRegisters(){
@@ -113,7 +125,27 @@ void alarmAt(){
 		outb(aux,0x71);
 
 		printf("insertar hora deseada para la alarma:\n");
-		scanf("%hhu:%hhu:%hhu",&hours,&minutes,&seconds);
+		scanf("%x:%x:%x",&hours,&minutes,&seconds);
+		unsigned char a,b;
+
+		for (int i = 0; i < 8; i++) {
+	    	printf("%d", !!((hours << i) & 0x80));
+	  	}		
+
+
+		hours = giveMeBCD(hours);
+	
+  		minutes = giveMeBCD(minutes);
+		
+  		seconds = giveMeBCD(seconds);
+
+  	//	printf("%x\n",hours );
+  //	printf("%x\n",minutes );
+//  	printf("%x\n",seconds );
+		
+		for (int i = 0; i < 8; i++) {
+	    	printf("%d", !!((hours << i) & 0x80));
+	  	}		
 
 
 		//write all data 
@@ -143,10 +175,55 @@ void alarmAt(){
 		outb(0x0B,0x70);
 		outb(aux,0x71);		
 	}
+	while(1){
+
+		if (in(0x0D) & 0x80)//read VRT 
+		{
+			uip_flag=1;
+			do{
+				if (in(0x0A)&0x80){	
+					nanosleep(1984000);
+				}else{
+					uip_flag=0;
+				}	
+			}while(uip_flag);
+
+			//write 1 to SET bit on 0x0B, first bit.
+			aux = in(0x0B);
+			aux = aux | 0x80; 
+			outb(0x0B,0x70);
+			outb(aux,0x71);
+
+			//read D5 bit in C register, if it is set, then a clock interruption has ocurred
+			outb(0x0C,0x70);
+			if(!!(inb(0x71) & 0x20)){
+				printf("Ocurrio una interrupcion de reloj a las %hhu:%hhu:%hhu\n", hours, minutes , seconds);
+				aux = in(0x0B);
+				aux= aux & 0x7F; 
+				outb(0x0B,0x70);
+				outb(aux,0x71);
+				return;
+			}
+
+			//set SET back to 0
+
+			aux = in(0x0B);
+			aux= aux & 0x7F; 
+			outb(0x0B,0x70);
+			outb(aux,0x71);		
+		}
+	}
+
+
+
+
 	return;
 }
 
+void squareWave(){
 
+	return;
+}
 
 void main(){
 	printf("UNSAM, PROGRAMACION, TP FINAL\n");
@@ -173,7 +250,7 @@ void main(){
 				alarmAt();
 				break;
 			case 3:
-
+				squareWave();
 				break;
 			case 4:
 
@@ -187,6 +264,10 @@ void main(){
 				continue;
 				break;
 		}
+
+		//Verificar interrupciones de alarma
+
+
 
 	}while(1);
 
