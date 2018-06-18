@@ -208,6 +208,46 @@ void squareWave(){
 //***************FOURTH ITEM*********************
 
 void lptWrite(){
+	/*Enviar por el puerto paralelo el campo minutos de la hora obtenida del RTC. Muestre en pantalla
+el valor que escribe en el puerto y el valor que debería leer del otro lado.*/
+	unsigned char aux;
+	if(canIRW()){
+		outb(0x02,0x70);
+		aux=inb(0x71);
+		finishedRW();
+		printf("El RTC esta en %x minutos.\n",aux );
+		
+		for (int i = 0; i < 8; i++) {
+	    	printf("%d", !!((aux << i) & 0x80));
+	  	}
+	  	printf("\n");
+	  	aux = ~aux;
+
+	  	printf("El RTC esta en %x minutos.\n",aux);
+		
+		for (int i = 0; i < 8; i++) {
+	    	printf("%d", !!((aux << i) & 0x80));
+	  	}
+	  	printf("\n");
+
+		if (ioperm(0x378,3,1)) {
+        	perror("ioperm");
+        	exit(1);
+    	}
+
+    	outb(aux,0x378); // write data to lpt data port
+    	outb(0x00,0x37A); // put STROBE LOW
+    	nanosleep(1001);	// wait 1us
+    	outb(0x01,0x37A);	//put STROBE LOW
+
+
+		if (ioperm(0x378,3,0)) {
+        	perror("ioperm");
+        	exit(1);
+    	}
+	}
+
+
 
 
 	return;
