@@ -162,6 +162,7 @@ void squareWave(){
 	//SQWE in 0x0B D3 enables square wave interruption
 	// last 4 bits in 0x0A define SQW frequency, for my case 2Hz i need to set them all in 1
 	unsigned char aux;
+	int state = 0; //i work under the assumption that SQW always starts at low state 
 	if (canIRW()){
 		//set RS0 RS1 RS2 RS3 to 1 in order to get 2Hz
 		aux = in(0x0A);
@@ -175,10 +176,13 @@ void squareWave(){
 		outb(0x0B,0x70);
 		outb(aux,0x71);		
 
+		outb(0x0C,0x70);
+		inb(0x71);	//Clear possible 1 on C register by reading it
+
 		finishedRW();
 
 		//now i will print a scale, it asks for at least 10 seconds and i have interruptions every 0.5s, so it must fit 20 iterations at least
-		for (int i = 1; i <= 15; ++i){
+		for (int i = 1; i <= 15; ++i){   //i will graph 15 seconds
 			printf("....!...%02i",i );
 		}	
 		printf("\n");
@@ -189,16 +193,13 @@ void squareWave(){
 			usleep(100000);
 			fflush(stdout);
 			if(canIRW()){
-				/*
 				outb(0x0C,0x70);
-				if(!!(inb(0x71) & 0x20)){
-				*/
-				finishedRW();
-				if (0){			//condicion de interrupcion o no?
+				if(!!(inb(0x71) & 0x40)){			//condicion de interrupcion o no?
 					printf("|");
 				}else{
-					printf(".");
+					printf("_");
 				}
+				finishedRW();
 			}
 		}
 	}
@@ -212,44 +213,39 @@ void lptWrite(){
 el valor que escribe en el puerto y el valor que debería leer del otro lado.*/
 	unsigned char aux;
 	if(canIRW()){
-		outb(0x02,0x70);
+		outb(0x02,0x70);	//first i read the minutes register 0x02
 		aux=inb(0x71);
 		finishedRW();
-		printf("El RTC esta en %x minutos.\n",aux );
+		printf("El RTC esta en %x minutos. Que en binario es ",aux );
 		
 		for (int i = 0; i < 8; i++) {
 	    	printf("%d", !!((aux << i) & 0x80));
 	  	}
-	  	printf("\n");
+	  	printf(".\n Estos valores se corresponden con los que recibiria un equipo conectado por lpt.\n");
 	  	aux = ~aux;
 
-	  	printf("El RTC esta en %x minutos.\n",aux);
+	  	printf("Para hacer el envio del dato debemos negarlo, de forma que en realidad enviamos %x minutos. Que en binario es ",aux);
 		
 		for (int i = 0; i < 8; i++) {
 	    	printf("%d", !!((aux << i) & 0x80));
 	  	}
-	  	printf("\n");
+	  	printf(".\n");
 
-		if (ioperm(0x378,3,1)) {
+		if (ioperm(0x378,3,1)){		//give me permissions on the lpt needed ports
         	perror("ioperm");
         	exit(1);
     	}
 
-    	outb(aux,0x378); // write data to lpt data port
-    	outb(0x00,0x37A); // put STROBE LOW
-    	nanosleep(1001);	// wait 1us
+    	outb(aux,0x378); // write denied data to lpt data port 0x378
+    	outb(0x00,0x37A); // put STROBE LOW D0 0x37A
+    	nanosleep(1001);	// wait 1us+
     	outb(0x01,0x37A);	//put STROBE LOW
 
-
-		if (ioperm(0x378,3,0)) {
+		if (ioperm(0x378,3,0)){		//remove permissions
         	perror("ioperm");
         	exit(1);
     	}
 	}
-
-
-
-
 	return;
 }
 
@@ -268,7 +264,7 @@ void main(){
   	}
 
 	do{
-		printf("1.Mostrar el contenido de los registros 0 al 13\n2.Utilizando el RTC programar una alarma a determinada hora\n3.Utilizando el RTC obtener un tren de pulsos de 2Hz realizando un muestreo del registro C y graficarlo en pantalla en tiempo real\n4.Enviar por el puerto paralelo el campo minutos de la hora obtenida del RTC\n");
+		printf("1.Mostrar el contenido de los registros 0 al 13\n2.Utilizando el RTC programar una alarma a determinada hora\n3.Utilizando el RTC obtener un tren de pulsos de 2Hz realizando un muestreo del registro C y graficarlo en pantalla en tiempo real\n4.Enviar por el puerto paralelo el campo minutos de la hora obtenida del RTC\n5.Salir\n");
 		scanf("%d",&option);
 
 		switch(option){
@@ -294,7 +290,6 @@ void main(){
 				break;
 		}
 
-		//Verificar interrupciones de alarma
 
 
 
