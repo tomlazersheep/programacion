@@ -19,6 +19,9 @@
 #include "sys/io.h"
 #include <string.h>
 
+//********GLOBAL VARIABLES*********
+int debug = 0;
+
 //******HELPER METHODS*****  
 unsigned char in (unsigned char reg){
   outb (reg, 0x70);
@@ -149,7 +152,21 @@ void alarmAt(){
 				printf("Ocurrio una interrupcion de reloj\n");
 				finishedRW();
 				return;
+			}else if(debug){ //little debug mode to output actual time in the rtc, to avoid waiting forever.
+				
+					outb(0x04,0x70);
+					aux=inb(0x71);
+					printf("%02x:",aux);
+					outb(0x02,0x70);
+					aux=inb(0x71);
+					printf("%02x:",aux);
+					outb(0x00,0x70);
+					aux=inb(0x71);
+					printf("%02x",aux);
+					printf("\n");
 			}
+			
+			finishedRW();
 		}
 	}
 	return;
@@ -283,6 +300,15 @@ void main(){
 			case 5:
 				printf("Saliendo.\n");
 				return;
+				break;
+			case 6:
+				if(debug){
+					debug = 0;
+					printf("Exit debug mode.\n");
+				}else{
+					debug = 1;
+					printf("Entered debug mode.\n");
+				}
 				break;
 			default:
 				printf("No es una opcion.\n");
